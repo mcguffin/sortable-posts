@@ -22,7 +22,7 @@ if( ! class_exists( 'SortablePosts' ) ) {
 
 	/**
 	 * SortablePosts class
-	 * 
+	 *
 	 * @since  1.0
 	 */
 	class SortablePosts {
@@ -106,7 +106,7 @@ if( ! class_exists( 'SortablePosts' ) ) {
 				}
 
 			}
-			
+
 			return;
 		}
 
@@ -152,7 +152,7 @@ if( ! class_exists( 'SortablePosts' ) ) {
 
 			// Get the object type to send to REST API
 			$obj_type = get_current_screen();
-			
+
 			// Create settings for localization
 			$settings = array(
 				'root'		=> esc_url_raw( rest_url() ),
@@ -186,7 +186,7 @@ if( ! class_exists( 'SortablePosts' ) ) {
 
 		/**
 		 * Adds admin theme styles to admin header
-		 * 
+		 *
 		 * @since  1.0
 		 */
 		function add_styles_to_header()
@@ -334,14 +334,14 @@ if( ! class_exists( 'SortablePosts' ) ) {
 					  $query->set( 'orderby', 'meta_value_num' );
 					  $query->set( 'order', 'ASC' );
 					  $query->set( 'meta_query',
-					    array( 
+					    array(
 						  'relation' => 'OR',
-						  array(  
+						  array(
 							'key' => '_sortable_posts_order_' . $taxonomy . '_' . $taxonomy_term,
 							'compare' => '!=',
 							'value' => ''
 						    ),
-						  array(  
+						  array(
 							'key' => '_sortable_posts_order_' . $taxonomy . '_' . $taxonomy_term,
 							'compare' => 'NOT EXISTS',
 							'value' => ''
@@ -354,14 +354,14 @@ if( ! class_exists( 'SortablePosts' ) ) {
 					    $new_args = array();
 					    $new_args['orderby'] = 'meta_value_num';
 					    $new_args['order'] = 'ASC';
-					    $new_args[ 'meta_query'] = array( 
+					    $new_args[ 'meta_query'] = array(
 						    'relation' => 'OR',
-						    array(  
+						    array(
 							  'key' => '_sortable_posts_order_' . $taxonomy . '_' . $taxonomy_term,
 							  'compare' => '!=',
 							  'value' => ''
 							),
-						    array(  
+						    array(
 							  'key' => '_sortable_posts_order_' . $taxonomy . '_' . $taxonomy_term,
 							  'compare' => 'NOT EXISTS',
 							  'value' => ''
@@ -369,9 +369,9 @@ if( ! class_exists( 'SortablePosts' ) ) {
 						    );
 					    $wp_query = new WP_Query(array_merge($args, $new_args));
 					    return $wp_query;
-					  } 
+					  }
 				  }
-								
+
 			}
 			return $query;
 		}
@@ -394,8 +394,11 @@ if( ! class_exists( 'SortablePosts' ) ) {
 				$data['menu_order'] = $wpdb->get_var(
 					"SELECT MAX(menu_order)+1 AS menu_order FROM {$wpdb->posts} WHERE post_type='{$type}'"
 				);
+				// prevent NULL values
+				if ( is_null( $data['menu_order'] ) ) {
+					$data['menu_order'] = 0;
+				}
 			}
-
 			return $data;
 		}
 
