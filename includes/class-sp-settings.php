@@ -32,8 +32,13 @@ class SortablePosts_Settings {
 	 */
 	public function register_menu()
 	{
+		/**
+		 * Displays the settings page if filter is set to true
+		 *
+		 * @since  1.1.3
+		 */
 		if ( apply_filters( 'sortable_posts_settings', true ) ) {
-			add_options_page( __( 'Sortable Posts For WordPress', SortablePosts::$textdomain ), __( 'Sortable Posts', SortablePosts::$textdomain ), 'administrator', 'sortable_posts_settings', array( $this, 'settings_html' ) );
+			add_options_page( __( 'Sortable Posts For WordPress', 'sortable-posts' ), __( 'Sortable Posts', 'sortable-posts' ), 'administrator', 'sortable_posts_settings', array( $this, 'settings_html' ) );
 		}
 	}
 
@@ -49,10 +54,10 @@ class SortablePosts_Settings {
 		?>
 		<div class="wrap">
 
-			<h2><?php _e( 'Sortable Posts For WordPress', SortablePosts::$textdomain ); ?></h2>
+			<h2><?php _e( 'Sortable Posts for WordPress', 'sortable-posts' ); ?></h2>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=sortable_posts_settings&tab=settings" class="nav-tab <?php echo $active_tab === 'settings' ? 'nav-tab-active' : ''; ?>">Settings</a>
+				<a href="?page=sortable_posts_settings&tab=settings" class="nav-tab <?php echo $active_tab === 'settings' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Settings', 'sortable-posts' ); ?></a>
 			</h2>
 
 			<form method="post" action="options.php">
@@ -75,14 +80,41 @@ class SortablePosts_Settings {
 	public function create_settings()
 	{
 		// Sortable settings section
-		add_settings_section( 'settings', 'Sortable Types', array( $this, 'settings_description' ), 'sortable_posts' );
+		add_settings_section(
+			'settings',
+			__( 'Sortable Types', 'sortable-posts' ),
+			array( $this, 'settings_description' ),
+			'sortable_posts'
+		);
 
 		// Post type settings
-		add_settings_field( 'sortable-post-types', 'Sortable Post Types', array( $this, 'posts_field_handler' ), 'sortable_posts', 'settings', array( 'id' => 'sortable-post-types', 'type' => 'text', 'desc' => 'These post types will magically become sortable!' ) );
+		add_settings_field(
+			'sortable-post-types',
+			__( 'Sortable Post Types', 'sortable-posts' ),
+			array( $this, 'posts_field_handler' ),
+			'sortable_posts',
+			'settings',
+			array(
+				'id' => 'sortable-post-types',
+				'type' => 'text',
+				'desc' => __( 'These post types will magically become sortable!', 'sortable-posts' )
+			)
+		);
 		register_setting( 'sortable_posts', 'sortable_posts' );
 
 		// Taxonomy settings
-		add_settings_field( 'sortable-taxonomy-types', 'Sortable Taxonomies', array( $this, 'taxonomies_field_handler' ), 'sortable_posts', 'settings', array( 'id' => 'sortable-taxonomy-types', 'type' => 'text', 'desc' => 'These taxonomies will magically become sortable!' ) );
+		add_settings_field(
+			'sortable-taxonomy-types',
+			__( 'Sortable Taxonomies', 'sortable-posts' ),
+			array( $this, 'taxonomies_field_handler' ),
+			'sortable_posts',
+			'settings',
+			array(
+				'id' => 'sortable-taxonomy-types',
+				'type' => 'text',
+				'desc' => __( 'These taxonomies will magically become sortable!', 'sortable-posts' )
+			)
+		);
 		register_setting( 'sortable_posts', 'sortable_taxonomies' );
 	}
 
@@ -93,7 +125,7 @@ class SortablePosts_Settings {
 	 * @echo string
 	 */
 	public function settings_description() {
-		echo '<p>Choose which types will be sortable.</p>';
+		echo '<p>' . __( 'Choose which types will be sortable.', 'sortable-posts' ) . '</p>';
 	}
 
 	/**
@@ -105,13 +137,16 @@ class SortablePosts_Settings {
 	 */
 	public function posts_field_handler( $data )
 	{
-		$args = array(
-			'_builtin' => false,
-		);
-
 		// Get the registered post types and post type option
-		$registered_post_types = get_post_types( $args, 'objects' );
-		$post_type_option = get_option( 'sortable_posts', array() ); ?>
+		$registered_post_types = get_post_types( '', 'objects' );
+
+		// Remove Media, Nav Menu Items, and Revisions
+		unset( $registered_post_types['attachment'] );
+		unset( $registered_post_types['nav_menu_item'] );
+		unset( $registered_post_types['revision'] );
+
+		// Checked post types
+		$checked_post_types = get_option( 'sortable_posts', array() ); ?>
 
 		<fieldset id="sortable-posts-fieldset">
 
@@ -123,9 +158,13 @@ class SortablePosts_Settings {
 					// Create checked variable
 					$checked = '';
 
-					// Check if post type is in post type option
-					if( in_array( $type->name, $post_type_option ) ) {
-						$checked = 'checked="checked"';
+					// Make this post type checked if its in array
+					if( is_array( $checked_post_types ) ) {
+
+						if( in_array( $type->name, $checked_post_types ) ) {
+							$checked = 'checked="checked"';
+						}
+
 					} ?>
 
 					<label for="sortable_post_type_<?php echo $type->name; ?>">
